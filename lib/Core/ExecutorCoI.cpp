@@ -54,6 +54,7 @@ bool getBrCondVars(Value* ptr, std::vector<Var> &assertVarSet) {
 
 bool Executor::getKleeAssertVars() {
   int countSimCycles = 0;
+  int rstCycles = 0; // 2 
   int simCycles = 2; // tune this number for pipeline
   for (std::vector<KFunction*>::iterator it = kmodule->functions.begin(), 
       ie = kmodule->functions.end(); it != ie; it ++) {
@@ -64,9 +65,10 @@ bool Executor::getKleeAssertVars() {
         if (CallInst* callInst = dyn_cast<CallInst>(&*(ki->inst))) {
           if (callInst->getCalledFunction()->getName() == "_ZN11Vor1200_cpu4evalEv") {
             countSimCycles ++;
+            errs() << "countSimCycles: " << "\n";
           }
         }
-        if (countSimCycles == 2*(simCycles+2)) { // pipeline+reset
+        if (countSimCycles == 2*(simCycles+rstCycles)) { // pipeline+reset
           if (BranchInst *branchInst = dyn_cast<BranchInst>(&*(ki->inst))) {
             getBrCondVars(branchInst, assertVarSet);
           }
